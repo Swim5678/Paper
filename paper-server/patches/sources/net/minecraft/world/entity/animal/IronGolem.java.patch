@@ -1,5 +1,14 @@
 --- a/net/minecraft/world/entity/animal/IronGolem.java
 +++ b/net/minecraft/world/entity/animal/IronGolem.java
+@@ -78,7 +_,7 @@
+         this.targetSelector
+             .addGoal(
+                 3,
+-                new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, level) -> entity instanceof Enemy && !(entity instanceof Creeper))
++                new NearestAttackableTargetGoal<>(this, Mob.class, 5, false, false, (entity, level) -> entity instanceof Enemy)
+             );
+         this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
+     }
 @@ -106,7 +_,7 @@
      @Override
      protected void doPush(Entity entity) {
