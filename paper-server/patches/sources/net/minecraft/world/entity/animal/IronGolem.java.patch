@@ -1,5 +1,13 @@
 --- a/net/minecraft/world/entity/animal/IronGolem.java
 +++ b/net/minecraft/world/entity/animal/IronGolem.java
+@@ -33,7 +_,6 @@
+ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
+ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+ import net.minecraft.world.entity.ai.goal.target.ResetUniversalAngerTargetGoal;
+-import net.minecraft.world.entity.monster.Creeper;
+ import net.minecraft.world.entity.monster.Enemy;
+ import net.minecraft.world.entity.player.Player;
+ import net.minecraft.world.item.ItemStack;
 @@ -78,7 +_,7 @@
          this.targetSelector
              .addGoal(
@@ -9,15 +17,44 @@
              );
          this.targetSelector.addGoal(4, new ResetUniversalAngerTargetGoal<>(this, false));
      }
-@@ -106,7 +_,7 @@
+@@ -105,8 +_,8 @@
+ 
      @Override
      protected void doPush(Entity entity) {
-         if (entity instanceof Enemy && !(entity instanceof Creeper) && this.getRandom().nextInt(20) == 0) {
+-        if (entity instanceof Enemy && !(entity instanceof Creeper) && this.getRandom().nextInt(20) == 0) {
 -            this.setTarget((LivingEntity)entity);
++        if (entity instanceof Enemy && this.getRandom().nextInt(20) == 0) {
 +            this.setTarget((LivingEntity)entity, org.bukkit.event.entity.EntityTargetLivingEntityEvent.TargetReason.COLLISION); // CraftBukkit - set reason
          }
  
          super.doPush(entity);
+@@ -135,7 +_,7 @@
+ 
+     @Override
+     public boolean canAttackType(EntityType<?> type) {
+-        return (!this.isPlayerCreated() || type != EntityType.PLAYER) && type != EntityType.CREEPER && super.canAttackType(type);
++        return (!this.isPlayerCreated() || type != EntityType.PLAYER) && super.canAttackType(type);
+     }
+ 
+     @Override
+@@ -148,7 +_,7 @@
+     @Override
+     protected void readAdditionalSaveData(ValueInput input) {
+         super.readAdditionalSaveData(input);
+-        this.setPlayerCreated(input.getBooleanOr("PlayerCreated", false));
++        this.setPlayerCreated(input.getBooleanOr("PlayerCreated", DEFAULT_PLAYER_CREATED));
+         this.readPersistentAngerSaveData(this.level(), input);
+     }
+ 
+@@ -261,7 +_,7 @@
+             return InteractionResult.PASS;
+         } else {
+             float health = this.getHealth();
+-            this.heal(25.0F);
++            this.heal((float)IRON_INGOT_HEAL_AMOUNT);
+             if (this.getHealth() == health) {
+                 return InteractionResult.PASS;
+             } else {
 @@ -305,7 +_,7 @@
          BlockPos blockPos = this.blockPosition();
          BlockPos blockPos1 = blockPos.below();
