@@ -29,5 +29,3 @@ jobs:
           java-version: "21"
           distribution: "temurin"
           cache: "maven"
-      - name: Install Java dependencies
-        run: mvn dependency:resolve
