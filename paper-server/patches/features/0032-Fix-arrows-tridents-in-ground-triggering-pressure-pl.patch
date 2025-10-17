@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Paper CI <paper@example.com>
+Date: Sun, 12 Oct 2025 23:46:21 +0000
+Subject: [PATCH] Fix arrows/tridents in ground triggering pressure plates
+
+
+diff --git a/net/minecraft/world/entity/projectile/AbstractArrow.java b/net/minecraft/world/entity/projectile/AbstractArrow.java
+index 7e1dd3c6a2f8852ab4471e0331f590d4c2015cfc..dbca85ddb07e9435ed4044d7adb0a3cd42a1eb65 100644
+--- a/net/minecraft/world/entity/projectile/AbstractArrow.java
++++ b/net/minecraft/world/entity/projectile/AbstractArrow.java
+@@ -761,6 +761,13 @@ public abstract class AbstractArrow extends Projectile {
+         return super.isPickable() && !this.isInGround();
+     }
+ 
++    // Paper start - Fix arrows/tridents in ground triggering pressure plates
++    @Override
++    public boolean isIgnoringBlockTriggers() {
++        return this.isInGround();
++    }
++    // Paper end - Fix arrows/tridents in ground triggering pressure plates
++
+     @Override
+     public SlotAccess getSlot(int slot) {
+         return slot == 0 ? SlotAccess.of(this::getPickupItemStackOrigin, this::setPickupItemStack) : super.getSlot(slot);
