@@ -28637,7 +28637,7 @@ index a480a35b23f38680598cb428bd09b7d1db07af6e..fe197ff989f084b563021ac62984e471
  
      @Override
 diff --git a/net/minecraft/world/entity/ai/village/poi/PoiManager.java b/net/minecraft/world/entity/ai/village/poi/PoiManager.java
-index a6f79e022af17de6e58e9a80805b607d674c6b85..0d137683ddf653d42ea2fc85aaa307163c460a3c 100644
+index a6f79e022af17de6e58e9a80805b607d674c6b85..e14f94c41ce4ea722582097666c8f9d889a8f95d 100644
 --- a/net/minecraft/world/entity/ai/village/poi/PoiManager.java
 +++ b/net/minecraft/world/entity/ai/village/poi/PoiManager.java
 @@ -41,12 +41,137 @@ import net.minecraft.world.level.chunk.storage.SectionStorage;
@@ -28800,7 +28800,7 @@ index a6f79e022af17de6e58e9a80805b607d674c6b85..0d137683ddf653d42ea2fc85aaa30716
      }
  
      private boolean isVillageCenter(final long sectionPos) {
-@@ -234,14 +362,21 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
+@@ -234,19 +362,26 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
  
      @Override
      public void tick(final BooleanSupplier haveTime) {
@@ -28827,6 +28827,12 @@ index a6f79e022af17de6e58e9a80805b607d674c6b85..0d137683ddf653d42ea2fc85aaa30716
      }
  
      @Override
+     protected void onSectionLoad(final long sectionPos) {
+-        this.distanceTracker.update(sectionPos, this.distanceTracker.getLevelFromSource(sectionPos), false);
++        this.updateDistanceTracking(sectionPos); // Paper - rewrite chunk system
+     }
+ 
+     public void checkConsistencyWithBlocks(final SectionPos sectionPos, final LevelChunkSection blockSection) {
 @@ -285,7 +420,7 @@ public class PoiManager extends SectionStorage<PoiSection, PoiSection.Packed> {
              .map(pos -> Pair.of(pos, this.getOrLoad(pos.asLong())))
              .filter(poiSection -> !poiSection.getSecond().map(PoiSection::isValid).orElse(false))
@@ -31012,7 +31018,7 @@ index 792f3016554dbb69ca1c67c03ea59fa2351e3db5..c9d21990d1506087b7f7dbbfcf4127c4
  
      private static <S extends StateHolder<?, ?>> S[][] emptyNeighbors() {
 diff --git a/net/minecraft/world/level/block/state/StateHolder.java b/net/minecraft/world/level/block/state/StateHolder.java
-index 7d0d5e8e6c951be025183f7b1712d34aeb48b110..8389223c6a98bda4fc64bdd3c763cc1556264054 100644
+index 7d0d5e8e6c951be025183f7b1712d34aeb48b110..b72861c0164ebb13b6fc3e78cd7ce0a2c484f22d 100644
 --- a/net/minecraft/world/level/block/state/StateHolder.java
 +++ b/net/minecraft/world/level/block/state/StateHolder.java
 @@ -13,21 +13,49 @@ import java.util.stream.Stream;
@@ -31088,7 +31094,7 @@ index 7d0d5e8e6c951be025183f7b1712d34aeb48b110..8389223c6a98bda4fc64bdd3c763cc15
      private <T extends Comparable<T>> @Nullable T getNullableValue(final Property<T> property) {
 -        int index = this.valueIndex(property);
 -        return index == -1 ? null : property.getValueClass().cast(this.propertyValues[index]);
-+        return this.optimisedTable.get(this.tableIndex, property); // Paper - optimise blockstate property access
++        return property == null ? null : this.optimisedTable.get(this.tableIndex, property); // Paper - optimise blockstate property access
      }
  
      public <T extends Comparable<T>> T getValue(final Property<T> property) {
