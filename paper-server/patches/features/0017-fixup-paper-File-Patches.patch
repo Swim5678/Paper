@@ -5,10 +5,10 @@ Subject: [PATCH] fixup! paper File Patches
 
 
 diff --git a/net/minecraft/server/level/ServerChunkCache.java b/net/minecraft/server/level/ServerChunkCache.java
-index 06108aab8800bc28491812a13cd36152f47fcecf..ec93c3e82373adeaee47345ea3ad2ef062b0d2a5 100644
+index f59751960c6e70343498f0068a0942a5d3439cc2..f9643583d8f2aa60cdb21a899a72b62fe43039c1 100644
 --- a/net/minecraft/server/level/ServerChunkCache.java
 +++ b/net/minecraft/server/level/ServerChunkCache.java
-@@ -76,7 +76,7 @@ public class ServerChunkCache extends ChunkSource {
+@@ -76,7 +76,7 @@ public class ServerChunkCache extends ChunkSource implements ca.spottedleaf.moon
      @VisibleForDebug
      private NaturalSpawner.@Nullable SpawnState lastSpawnState;
      // Paper start

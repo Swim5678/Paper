@@ -2326,7 +2326,7 @@ index 0000000000000000000000000000000000000000..298076a0db4e6ee6e4775ac43bf749d9
 +    }
 +}
 diff --git a/net/minecraft/server/level/ServerLevel.java b/net/minecraft/server/level/ServerLevel.java
-index 43c47bdd2fdb7731eec5301e20f923d0703a36fc..75068c07d1892882a85e27e30da8ac9906cf16e7 100644
+index d0cc271f558bcb4d3c205241d4a01f6546f9f187..260fa49d6acb61365fd291ab3e4c85240d95c107 100644
 --- a/net/minecraft/server/level/ServerLevel.java
 +++ b/net/minecraft/server/level/ServerLevel.java
 @@ -232,6 +232,7 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
@@ -2337,7 +2337,7 @@ index 43c47bdd2fdb7731eec5301e20f923d0703a36fc..75068c07d1892882a85e27e30da8ac99
  
      @Override
      public @Nullable LevelChunk getChunkIfLoaded(int x, int z) {
-@@ -2434,6 +2435,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
+@@ -2768,6 +2769,13 @@ public class ServerLevel extends Level implements WorldGenLevel, ServerEntityGet
          return this.debugSynchronizers;
      }
  
@@ -2352,10 +2352,10 @@ index 43c47bdd2fdb7731eec5301e20f923d0703a36fc..75068c07d1892882a85e27e30da8ac99
          return toLevel.dimension() != Level.NETHER || this.getGameRules().get(GameRules.ALLOW_ENTERING_NETHER_USING_PORTALS);
      }
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index ad39c0822f757216d817934ba18440c228dc6be3..52e870443337adbd7a573cbc49a0b094a84a905d 100644
+index 6ddb43249b0f517ee94e78e3a16c562778098759..9f2e0a2f1a078f6e93f9571fc6c4042271f52927 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
-@@ -1446,6 +1446,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
+@@ -2150,6 +2150,17 @@ public abstract class Level implements LevelAccessor, AutoCloseable, ca.spottedl
          return this.palettedContainerFactory;
      }
  
