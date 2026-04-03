@@ -27042,7 +27042,7 @@ index 2ffb9c7388e15ec3e3afd3fa50cc0149c0c8910d..41816ca8d4ef3d959d2b88cd4b2eedaa
      }
  
 diff --git a/net/minecraft/server/level/ThreadedLevelLightEngine.java b/net/minecraft/server/level/ThreadedLevelLightEngine.java
-index 46ce24ea601b1525834c1165075fc89d7ed8c69b..913c25e3159246a104d1280a39e85f4954d0323a 100644
+index 46ce24ea601b1525834c1165075fc89d7ed8c69b..c050f208f485f67061fe5bf617915cd83860e5f3 100644
 --- a/net/minecraft/server/level/ThreadedLevelLightEngine.java
 +++ b/net/minecraft/server/level/ThreadedLevelLightEngine.java
 @@ -23,15 +23,144 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
@@ -27329,7 +27329,7 @@ index 46ce24ea601b1525834c1165075fc89d7ed8c69b..913c25e3159246a104d1280a39e85f49
 -            super.retainData(pos, false);
 -            return chunk;
 -        }, r -> this.addTask(pos.x(), pos.z(), ThreadedLevelLightEngine.TaskType.POST_UPDATE, r));
-+        throw new UnsupportedOperationException(); // Paper - rewrite chunk system
++        return CompletableFuture.completedFuture(chunk); // Paper start - rewrite chunk system
      }
  
      public CompletableFuture<ChunkAccess> lightChunk(final ChunkAccess centerChunk, final boolean lighted) {
