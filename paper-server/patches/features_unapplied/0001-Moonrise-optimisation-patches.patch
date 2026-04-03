@@ -1141,10 +1141,10 @@ index 0000000000000000000000000000000000000000..a814512fcfb85312474ae2c2c2144384
 +}
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..344e155420de9148cd402f626af11d4c523cacff
+index 0000000000000000000000000000000000000000..27eeb842e6b22bd12b582379eaaa76b622dfca5e
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/io/MoonriseRegionFileIO.java
-@@ -0,0 +1,1489 @@
+@@ -0,0 +1,1488 @@
 +package ca.spottedleaf.moonrise.patches.chunk_system.io;
 +
 +import ca.spottedleaf.concurrentutil.collection.MultiThreadedQueue;
@@ -1153,8 +1153,7 @@ index 0000000000000000000000000000000000000000..344e155420de9148cd402f626af11d4c
 +import ca.spottedleaf.concurrentutil.executor.Cancellable;
 +import ca.spottedleaf.concurrentutil.executor.PrioritisedExecutor;
 +import ca.spottedleaf.concurrentutil.executor.queue.AreaDependentQueue;
-+import ca.spottedleaf.concurrentutil.function.BiLong1Function;
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.concurrentutil.util.ConcurrentUtil;
 +import ca.spottedleaf.concurrentutil.util.Priority;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
@@ -1919,7 +1918,7 @@ index 0000000000000000000000000000000000000000..344e155420de9148cd402f626af11d4c
 +        final ImmediateCallbackCompletion callbackInfo = new ImmediateCallbackCompletion();
 +
 +        final long key = CoordinateUtils.getChunkKey(chunkX, chunkZ);
-+        final BiLong1Function<ChunkIOTask, ChunkIOTask> compute = (final long keyInMap, final ChunkIOTask running) -> {
++        final ConcurrentChainedLong2ReferenceHashTable.BiLongObjectObjectFunction<ChunkIOTask, ChunkIOTask> compute = (final long keyInMap, final ChunkIOTask running) -> {
 +            if (running == null) {
 +                // not scheduled
 +
@@ -2567,7 +2566,7 @@ index 0000000000000000000000000000000000000000..344e155420de9148cd402f626af11d4c
 +
 +        public final RegionFileType type;
 +        private final PrioritisedExecutor compressionExecutor;
-+        private final ConcurrentLong2ReferenceChainedHashTable<ChunkIOTask> chunkTasks = new ConcurrentLong2ReferenceChainedHashTable<>();
++        private final ConcurrentChainedLong2ReferenceHashTable<ChunkIOTask> chunkTasks = new ConcurrentChainedLong2ReferenceHashTable<>();
 +        private final AreaDependentQueue regionIoQueue;
 +
 +        private final AtomicLong inProgressTasks = new AtomicLong();
@@ -3673,14 +3672,14 @@ index 0000000000000000000000000000000000000000..0cfdbdee091f43ca011bc68f7479eb7b
 +}
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..2d24d03bbdb5ee0d862cbfff2219f58afffafe12
+index 0000000000000000000000000000000000000000..56e71bf01f22579c294c6b33450bd282e082f6ae
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup.java
 @@ -0,0 +1,1006 @@
 +package ca.spottedleaf.moonrise.patches.chunk_system.level.entity;
 +
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
 +import ca.spottedleaf.concurrentutil.map.SWMRLong2ObjectHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.moonrise.common.list.EntityList;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import ca.spottedleaf.moonrise.common.util.WorldUtil;
@@ -3727,7 +3726,7 @@ index 0000000000000000000000000000000000000000..2d24d03bbdb5ee0d862cbfff2219f58a
 +
 +    protected final LevelCallback<Entity> worldCallback;
 +
-+    protected final ConcurrentLong2ReferenceChainedHashTable<Entity> entityById = new ConcurrentLong2ReferenceChainedHashTable<>();
++    protected final ConcurrentChainedLong2ReferenceHashTable<Entity> entityById = new ConcurrentChainedLong2ReferenceHashTable<>();
 +    protected final ConcurrentHashMap<UUID, Entity> entityByUUID = new ConcurrentHashMap<>();
 +    protected final EntityList accessibleEntities = new EntityList();
 +
@@ -6512,13 +6511,13 @@ index 0000000000000000000000000000000000000000..0743659c9f1122088adad4992b93649e
 +}
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7eafc5b7cba23d8dec92ecc1050afe3fd8c9e309
+index 0000000000000000000000000000000000000000..7dda31a98de2ddf0ca7a520ae48025fc96754011
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/queue/ChunkUnloadQueue.java
 @@ -0,0 +1,144 @@
 +package ca.spottedleaf.moonrise.patches.chunk_system.queue;
 +
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import com.google.gson.JsonArray;
 +import com.google.gson.JsonElement;
@@ -6534,7 +6533,7 @@ index 0000000000000000000000000000000000000000..7eafc5b7cba23d8dec92ecc1050afe3f
 +
 +    public final int coordinateShift;
 +    private final AtomicLong orderGenerator = new AtomicLong();
-+    private final ConcurrentLong2ReferenceChainedHashTable<UnloadSection> unloadSections = new ConcurrentLong2ReferenceChainedHashTable<>();
++    private final ConcurrentChainedLong2ReferenceHashTable<UnloadSection> unloadSections = new ConcurrentChainedLong2ReferenceHashTable<>();
 +
 +    /*
 +     * Note: write operations do not occur in parallel for any given section.
@@ -6550,8 +6549,8 @@ index 0000000000000000000000000000000000000000..7eafc5b7cba23d8dec92ecc1050afe3f
 +    public List<SectionToUnload> retrieveForAllRegions() {
 +        final List<SectionToUnload> ret = new ArrayList<>();
 +
-+        for (final Iterator<ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection>> iterator = this.unloadSections.entryIterator(); iterator.hasNext();) {
-+            final ConcurrentLong2ReferenceChainedHashTable.TableEntry<UnloadSection> entry = iterator.next();
++        for (final Iterator<ConcurrentChainedLong2ReferenceHashTable.TableEntry<UnloadSection>> iterator = this.unloadSections.entryIterator(); iterator.hasNext();) {
++            final ConcurrentChainedLong2ReferenceHashTable.TableEntry<UnloadSection> entry = iterator.next();
 +            final long key = entry.getKey();
 +            final UnloadSection section = entry.getValue();
 +            final int sectionX = CoordinateUtils.getChunkX(key);
@@ -6660,10 +6659,9 @@ index 0000000000000000000000000000000000000000..7eafc5b7cba23d8dec92ecc1050afe3f
 +        }
 +    }
 +}
-\ No newline at end of file
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9231253a8
+index 0000000000000000000000000000000000000000..05d374f679919d082064e8f2bb363a419bc9648e
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ChunkHolderManager.java
 @@ -0,0 +1,1568 @@
@@ -6671,8 +6669,8 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +
 +import ca.spottedleaf.concurrentutil.collection.MultiThreadedQueue;
 +import ca.spottedleaf.concurrentutil.lock.ReentrantAreaLock;
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2LongChainedHashTable;
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2LongHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.concurrentutil.util.Priority;
 +import ca.spottedleaf.moonrise.common.PlatformHooks;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
@@ -6744,11 +6742,11 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +    private static final long NO_TIMEOUT_MARKER = Long.MIN_VALUE;
 +    public final ReentrantAreaLock ticketLockArea;
 +
-+    private final ConcurrentLong2ReferenceChainedHashTable<TicketSet> tickets = new ConcurrentLong2ReferenceChainedHashTable<>();
-+    private final ConcurrentLong2ReferenceChainedHashTable<Long2IntOpenHashMap> sectionToChunkToExpireCount = new ConcurrentLong2ReferenceChainedHashTable<>();
++    private final ConcurrentChainedLong2ReferenceHashTable<TicketSet> tickets = new ConcurrentChainedLong2ReferenceHashTable<>();
++    private final ConcurrentChainedLong2ReferenceHashTable<Long2IntOpenHashMap> sectionToChunkToExpireCount = new ConcurrentChainedLong2ReferenceHashTable<>();
 +    final ChunkUnloadQueue unloadQueue;
 +
-+    private final ConcurrentLong2ReferenceChainedHashTable<NewChunkHolder> chunkHolders = ConcurrentLong2ReferenceChainedHashTable.createWithCapacity(16384, 0.25f);
++    private final ConcurrentChainedLong2ReferenceHashTable<NewChunkHolder> chunkHolders = ConcurrentChainedLong2ReferenceHashTable.createWithCapacity(16384, 0.25f);
 +    private final ServerLevel world;
 +    private final ChunkTaskScheduler taskScheduler;
 +    private long currentTick;
@@ -6777,7 +6775,7 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +    });
 +
 +    // mapping of counter id -> (mapping of pos->count)
-+    private final ConcurrentLong2ReferenceChainedHashTable<ConcurrentLong2LongChainedHashTable> ticketCounters = new ConcurrentLong2ReferenceChainedHashTable<>();
++    private final ConcurrentChainedLong2ReferenceHashTable<ConcurrentChainedLong2LongHashTable> ticketCounters = new ConcurrentChainedLong2ReferenceHashTable<>();
 +
 +    public ChunkHolderManager(final ServerLevel world, final ChunkTaskScheduler taskScheduler) {
 +        this.world = world;
@@ -7320,7 +7318,7 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +    private void addTicketCounter(final TicketType type, final long pos) {
 +        for (final long counterType : ((ChunkSystemTicketType<?>)(Object)type).moonrise$getCounterTypes()) {
 +            this.ticketCounters.computeIfAbsent(counterType, (final long counterId) -> {
-+                return new ConcurrentLong2LongChainedHashTable();
++                return new ConcurrentChainedLong2LongHashTable();
 +            }).addTo(pos, 1L, 1L);
 +        }
 +    }
@@ -7331,7 +7329,7 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +        }
 +    }
 +
-+    public ConcurrentLong2LongChainedHashTable getTicketCounters(final long counterType) {
++    public ConcurrentChainedLong2LongHashTable getTicketCounters(final long counterType) {
 +        return this.ticketCounters.get(counterType);
 +    }
 +
@@ -8199,9 +8197,9 @@ index 0000000000000000000000000000000000000000..41b4c5a87b5153f845421a7df8df04c9
 +        final JsonArray allTicketsJson = new JsonArray();
 +        ret.add("tickets", allTicketsJson);
 +
-+        for (final Iterator<ConcurrentLong2ReferenceChainedHashTable.TableEntry<TicketSet>> iterator = this.tickets.entryIterator();
++        for (final Iterator<ConcurrentChainedLong2ReferenceHashTable.TableEntry<TicketSet>> iterator = this.tickets.entryIterator();
 +            iterator.hasNext();) {
-+            final ConcurrentLong2ReferenceChainedHashTable.TableEntry<TicketSet> coordinateTickets = iterator.next();
++            final ConcurrentChainedLong2ReferenceHashTable.TableEntry<TicketSet> coordinateTickets = iterator.next();
 +            final long coordinate = coordinateTickets.getKey();
 +            final TicketSet tickets = coordinateTickets.getValue();
 +
@@ -11500,7 +11498,7 @@ index 0000000000000000000000000000000000000000..6b468c621b74449a6218391f6477cf63
 +}
 diff --git a/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ThreadedTicketLevelPropagator.java b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ThreadedTicketLevelPropagator.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..342d41bd32ea5e0ca40da677d2d5d6b87b77a4a9
+index 0000000000000000000000000000000000000000..3922616c82a9a38fb51038cd4f4c10d7921b649a
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/chunk_system/scheduling/ThreadedTicketLevelPropagator.java
 @@ -0,0 +1,1247 @@
@@ -11508,7 +11506,7 @@ index 0000000000000000000000000000000000000000..342d41bd32ea5e0ca40da677d2d5d6b8
 +
 +import ca.spottedleaf.concurrentutil.collection.MultiThreadedQueue;
 +import ca.spottedleaf.concurrentutil.lock.ReentrantAreaLock;
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.concurrentutil.util.ConcurrentUtil;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkProgressionTask;
@@ -11540,11 +11538,11 @@ index 0000000000000000000000000000000000000000..342d41bd32ea5e0ca40da677d2d5d6b8
 +    }
 +
 +    private final UpdateQueue updateQueue;
-+    private final ConcurrentLong2ReferenceChainedHashTable<Section> sections;
++    private final ConcurrentChainedLong2ReferenceHashTable<Section> sections;
 +
 +    public ThreadedTicketLevelPropagator() {
 +        this.updateQueue = new UpdateQueue();
-+        this.sections = new ConcurrentLong2ReferenceChainedHashTable<>();
++        this.sections = new ConcurrentChainedLong2ReferenceHashTable<>();
 +    }
 +
 +    // must hold ticket lock for:
@@ -21041,7 +21039,7 @@ index 0000000000000000000000000000000000000000..d5eb47f26039220456d271d2f6d00be6
 +}
 diff --git a/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java b/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7faf226b753a03e03b0dec9bbfcc94a6c3f5bc0f
+index 0000000000000000000000000000000000000000..ef896fd3cad9ad8b67f5048fab2cfe28559bdca5
 --- /dev/null
 +++ b/ca/spottedleaf/moonrise/patches/starlight/light/StarLightInterface.java
 @@ -0,0 +1,936 @@
@@ -21049,7 +21047,7 @@ index 0000000000000000000000000000000000000000..7faf226b753a03e03b0dec9bbfcc94a6
 +
 +import ca.spottedleaf.concurrentutil.collection.MultiThreadedQueue;
 +import ca.spottedleaf.concurrentutil.executor.PrioritisedExecutor;
-+import ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable;
++import ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable;
 +import ca.spottedleaf.concurrentutil.util.Priority;
 +import ca.spottedleaf.moonrise.common.util.CoordinateUtils;
 +import ca.spottedleaf.moonrise.common.util.WorldUtil;
@@ -21792,7 +21790,7 @@ index 0000000000000000000000000000000000000000..7faf226b753a03e03b0dec9bbfcc94a6
 +
 +    public static final class ServerLightQueue extends LightQueue {
 +
-+        private final ConcurrentLong2ReferenceChainedHashTable<ServerChunkTasks> chunkTasks = new ConcurrentLong2ReferenceChainedHashTable<>();
++        private final ConcurrentChainedLong2ReferenceHashTable<ServerChunkTasks> chunkTasks = new ConcurrentChainedLong2ReferenceHashTable<>();
 +
 +        public ServerLightQueue(final StarLightInterface lightInterface) {
 +            super(lightInterface);
@@ -29029,7 +29027,7 @@ index e07a7bda45146686a6ac2d20507df9fc8630514f..f84e651e2a34e76a0a71993332e4be1b
  
      // Paper start - Affects Spawning API
 diff --git a/net/minecraft/world/level/Level.java b/net/minecraft/world/level/Level.java
-index eb225f4c8cdf68fb965147bde3309c28847a71b7..9f9cd4757e9361db15987f188d44a5c58acfc12e 100644
+index eb225f4c8cdf68fb965147bde3309c28847a71b7..8e90e9148638273803eea4dbfbc7736bc5857e55 100644
 --- a/net/minecraft/world/level/Level.java
 +++ b/net/minecraft/world/level/Level.java
 @@ -87,6 +87,7 @@ import net.minecraft.world.level.storage.LevelData;
@@ -29064,7 +29062,7 @@ index eb225f4c8cdf68fb965147bde3309c28847a71b7..9f9cd4757e9361db15987f188d44a5c5
  
 +    // Paper start - rewrite chunk system
 +    private ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup entityLookup;
-+    private final ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData> chunkData = new ca.spottedleaf.concurrentutil.map.ConcurrentLong2ReferenceChainedHashTable<>();
++    private final ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable<ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData> chunkData = new ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2ReferenceHashTable<>();
 +
 +    @Override
 +    public final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup moonrise$getEntityLookup() {
@@ -30393,7 +30391,7 @@ index 0cf47956a699c679259a920572efd3bea2b19a61..0ef64fcf11d6cd0e25227fe6053ca8cb
          }
  
 diff --git a/net/minecraft/world/level/TicketStorage.java b/net/minecraft/world/level/TicketStorage.java
-index 312d2eeda6b413d3b2d10ee58bd154bbddc88451..afeefcac61d99d604dc6db4b39bc95409a65a9f7 100644
+index 312d2eeda6b413d3b2d10ee58bd154bbddc88451..3d2fc3809ec8a1d8bda47da4fd631bb0fe712ca5 100644
 --- a/net/minecraft/world/level/TicketStorage.java
 +++ b/net/minecraft/world/level/TicketStorage.java
 @@ -30,7 +30,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
@@ -30503,7 +30501,7 @@ index 312d2eeda6b413d3b2d10ee58bd154bbddc88451..afeefcac61d99d604dc6db4b39bc9540
 -
 -        return false;
 +        // Paper start - rewrite chunk system
-+        final ca.spottedleaf.concurrentutil.map.ConcurrentLong2LongChainedHashTable ticketCounters = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.chunkMap.level).moonrise$getChunkTaskScheduler().chunkHolderManager
++        final ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2LongHashTable ticketCounters = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.chunkMap.level).moonrise$getChunkTaskScheduler().chunkHolderManager
 +            .getTicketCounters(ca.spottedleaf.moonrise.patches.chunk_system.ticket.ChunkSystemTicketType.COUNTER_TYPE_KEEP_DIMENSION_ACTIVE);
 +        return ticketCounters != null && !ticketCounters.isEmpty();
 +        // Paper end - rewrite chunk system
@@ -30739,7 +30737,7 @@ index 312d2eeda6b413d3b2d10ee58bd154bbddc88451..afeefcac61d99d604dc6db4b39bc9540
 -        return this.chunksWithForcedTickets;
 -    }
 +        // Paper start - rewrite chunk system
-+        final ca.spottedleaf.concurrentutil.map.ConcurrentLong2LongChainedHashTable forced = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.chunkMap.level).moonrise$getChunkTaskScheduler()
++        final ca.spottedleaf.concurrentutil.map.concurrent.longs.ConcurrentChainedLong2LongHashTable forced = ((ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemServerLevel)this.chunkMap.level).moonrise$getChunkTaskScheduler()
 +            .chunkHolderManager.getTicketCounters(ca.spottedleaf.moonrise.patches.chunk_system.ticket.ChunkSystemTicketType.COUNTER_TYPE_FORCED);
  
 -    private LongSet getAllChunksWithTicketThat(final Predicate<Ticket> ticketCheck) {
