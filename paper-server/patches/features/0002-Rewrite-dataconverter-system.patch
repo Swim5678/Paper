@@ -217,7 +217,7 @@ index 0000000000000000000000000000000000000000..515f6691c72ffa82ac8b92646768be7a
 +}
 diff --git a/ca/spottedleaf/dataconverter/minecraft/MCVersionRegistry.java b/ca/spottedleaf/dataconverter/minecraft/MCVersionRegistry.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..d4f6211eb627e63bf1926c97587939e9a7b3669d
+index 0000000000000000000000000000000000000000..c48181291e18bbec351f267ac35ce97718aec24c
 --- /dev/null
 +++ b/ca/spottedleaf/dataconverter/minecraft/MCVersionRegistry.java
 @@ -0,0 +1,512 @@
@@ -517,7 +517,7 @@ index 0000000000000000000000000000000000000000..d4f6211eb627e63bf1926c97587939e9
 +            4661,
 +            4763,
 +            4769,
-+            // All up to 26.1-pre2
++            // All up to 26.1.1
 +        };
 +        Arrays.sort(converterVersions);
 +
@@ -735,10 +735,10 @@ index 0000000000000000000000000000000000000000..d4f6211eb627e63bf1926c97587939e9
 +}
 diff --git a/ca/spottedleaf/dataconverter/minecraft/MCVersions.java b/ca/spottedleaf/dataconverter/minecraft/MCVersions.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..7e947af720d25542e893fac2a22ccd400e5c708c
+index 0000000000000000000000000000000000000000..ae6457bd6575900f5eaf4b51b5d6647e1d57c28e
 --- /dev/null
 +++ b/ca/spottedleaf/dataconverter/minecraft/MCVersions.java
-@@ -0,0 +1,647 @@
+@@ -0,0 +1,654 @@
 +package ca.spottedleaf.dataconverter.minecraft;
 +
 +@SuppressWarnings("unused")
@@ -1383,6 +1383,13 @@ index 0000000000000000000000000000000000000000..7e947af720d25542e893fac2a22ccd40
 +    public static final int V26_1_SNAPSHOT11      = 4779;
 +    public static final int V26_1_PRE1            = 4780;
 +    public static final int V26_1_PRE2            = 4781;
++    public static final int V26_1_PRE3            = 4782;
++    public static final int V26_1_RC1             = 4783;
++    public static final int V26_1_RC2             = 4784;
++    public static final int V26_1_RC3             = 4785;
++    public static final int V26_1                 = 4786;
++    public static final int V26_1RC1              = 4787;
++    public static final int V26_1_1               = 4788;
 +
 +    private MCVersions() {}
 +}
@@ -15871,7 +15878,7 @@ index 0000000000000000000000000000000000000000..0fe1e7b2c8c6e197c89643da0f2cda9f
 +}
 diff --git a/ca/spottedleaf/dataconverter/minecraft/versions/V2514.java b/ca/spottedleaf/dataconverter/minecraft/versions/V2514.java
 new file mode 100644
-index 0000000000000000000000000000000000000000..167109fb53b45901e944ae3eb4a690956fe18e8f
+index 0000000000000000000000000000000000000000..42750772c20694588015c2b82c4d1d673889da3b
 --- /dev/null
 +++ b/ca/spottedleaf/dataconverter/minecraft/versions/V2514.java
 @@ -0,0 +1,590 @@
@@ -16036,8 +16043,8 @@ index 0000000000000000000000000000000000000000..167109fb53b45901e944ae3eb4a69095
 +
 +    static void replaceUUIDMLTag(final MapType data, final String oldPath, final String newPath) {
 +        final int[] uuid = createUUIDFromLongs(data.getMap(oldPath), "M", "L");
++        data.remove(oldPath);
 +        if (uuid != null) {
-+            data.remove(oldPath);
 +            data.setInts(newPath, uuid);
 +        }
 +    }
